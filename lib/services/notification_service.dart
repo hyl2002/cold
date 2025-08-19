@@ -13,7 +13,7 @@ class NotificationService {
 
   static Future<void> scheduleNotification(String name, DateTime date) async {
     final tzDate = tz.TZDateTime.from(
-      DateTime(date.year, date.month, date.day - 3, 13, 0),
+      DateTime(date.year, date.month, date.day - 1, 11, 30),
       tz.local,
     );
 

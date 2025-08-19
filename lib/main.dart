@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // ★ 导入此包
 import 'package:timezone/data/latest.dart' as tz;
 import 'pages/home_page.dart';
 import 'services/notification_service.dart';
@@ -22,6 +23,16 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF7F9FC),
       ),
       home: const HomePage(),
+      locale: const Locale('zh', 'CN'),
+      supportedLocales: const [
+        Locale('zh', 'CN'),
+        Locale('en', 'US'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate, // 这里不会再报错
+      ],
     );
   }
 }
