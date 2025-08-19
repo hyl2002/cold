@@ -25,10 +25,12 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Future<void> _pickDate() async {
+    final DateTime now =DateTime.now();
+    final DateTime today=DateTime(now.year,now.month,now.day);
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
+      firstDate: today,
       lastDate: DateTime(2100),
       builder: (context, child) {
         // 自定义日历样式（阴影 & 圆角）
