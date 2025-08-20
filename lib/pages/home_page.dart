@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                   fit: BoxFit.cover,
                 )
                     : Image.asset(
-                  'assets/images/3.png',
+                  'assets/images/校历.jpg',
                   width: double.infinity,
                   height: 250,
                   fit: BoxFit.cover,
