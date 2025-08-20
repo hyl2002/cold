@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async'; // 👈 增加这个，定时器需要
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,6 +18,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Event> _events = [];
   File? _bannerImage;
+  Timer? _timer; // 👈 用来定时刷新
 
   @override
   void initState() {
@@ -29,6 +31,17 @@ class _HomePageState extends State<HomePage> {
     }
 
     _loadEvents();
+
+    // 👇 每分钟刷新一次页面，重新计算剩余天数
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // 👈 页面销毁时关闭定时器，防止内存泄漏
+    super.dispose();
   }
 
   Future<void> _loadEvents() async {
