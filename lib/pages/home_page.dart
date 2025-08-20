@@ -5,8 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'add_event_page.dart';
 import '../models/event.dart';
 import '../services/storage_service.dart';
-
-// Windows 桌面需要 window_size
 import 'package:window_size/window_size.dart';
 
 class HomePage extends StatefulWidget {
@@ -47,6 +45,13 @@ class _HomePageState extends State<HomePage> {
   void _addEvent(String name, DateTime date) {
     setState(() {
       _events.add(Event(name, date));
+    });
+    _saveEvents();
+  }
+
+  void _editEvent(int index, Event updatedEvent) {
+    setState(() {
+      _events[index] = updatedEvent;
     });
     _saveEvents();
   }
@@ -120,10 +125,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
           const SizedBox(height: 8),
 
-          // 下方纪念日列表
+          // 事件网格显示
           Expanded(
             child: _events.isEmpty
                 ? const Center(
@@ -132,58 +136,114 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 18, color: Colors.black54),
               ),
             )
-                : ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: _events.length,
-              separatorBuilder: (context, index) =>
-              const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final event = _events[index];
-                final daysLeft =
-                    event.date.difference(DateTime.now()).inDays + 1;
+                : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: GridView.builder(
+                itemCount: _events.length,
+                gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3, // 每行三个
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 1, // 正方形
+                ),
+                itemBuilder: (context, index) {
+                  final event = _events[index];
+                  final daysLeft =
+                      event.date.difference(DateTime.now()).inDays + 1;
 
-                return Dismissible(
-                  key: Key(event.name + event.date.toString()),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  onDismissed: (direction) => _deleteEvent(index),
-                  child: Card(
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blueAccent,
-                        child: const Icon(Icons.event, color: Colors.white),
-                      ),
-                      title: Text(
-                        event.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  return Stack(
+                    children: [
+                      // 中间点击编辑
+                      GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddEventPage(
+                                initialName: event.name,
+                                initialDate: event.date,
+                              ),
+                            ),
+                          );
+                          if (result != null &&
+                              result is Map<String, dynamic>) {
+                            _editEvent(
+                              index,
+                              Event(result['name'], result['date']),
+                            );
+                          }
+                        },
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 3,
+                          shadowColor: Colors.black38,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    event.name,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '剩余 $daysLeft 天',
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.black87),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${event.date.year}-${event.date.month}-${event.date.day}',
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.black54),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      subtitle: Text(
-                        '日期: ${event.date.year}-${event.date.month}-${event.date.day}\n剩余 $daysLeft 天',
-                        style: const TextStyle(color: Colors.black87),
+                      // 删除按钮右上角
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.redAccent,
+                            ),
+                            onPressed: () => _deleteEvent(index),
+                          ),
+                        ),
                       ),
-                      trailing:
-                      const Icon(Icons.arrow_forward_ios, size: 16),
-                    ),
-                  ),
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ],

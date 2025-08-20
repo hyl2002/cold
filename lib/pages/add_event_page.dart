@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 
 class AddEventPage extends StatefulWidget {
-  const AddEventPage({super.key});
+  final String? initialName;
+  final DateTime? initialDate;
+  const AddEventPage({super.key, this.initialName, this.initialDate});
 
   @override
   State<AddEventPage> createState() => _AddEventPageState();
 }
 
 class _AddEventPageState extends State<AddEventPage> {
-  final TextEditingController _nameController = TextEditingController();
+  late TextEditingController _nameController;
   DateTime? _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName ?? '');
+    _selectedDate = widget.initialDate;
+  }
 
   void _saveEvent() {
     if (_nameController.text.isNotEmpty && _selectedDate != null) {
@@ -25,20 +34,23 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Future<void> _pickDate() async {
-    final DateTime now =DateTime.now();
-    final DateTime today=DateTime(now.year,now.month,now.day);
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime initialDate = _selectedDate != null && !_selectedDate!.isBefore(today)
+        ? _selectedDate!
+        : today;
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: initialDate,
       firstDate: today,
       lastDate: DateTime(2100),
       builder: (context, child) {
-        // 自定义日历样式（阴影 & 圆角）
         return Theme(
           data: Theme.of(context).copyWith(
             dialogBackgroundColor: Colors.white,
             colorScheme: ColorScheme.light(
-              primary: Colors.blue.shade400, // 选中日期高亮色
+              primary: Colors.blue.shade400,
               onPrimary: Colors.white,
               onSurface: Colors.black87,
             ),
@@ -90,16 +102,11 @@ class _AddEventPageState extends State<AddEventPage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('添加纪念日'),
+        title: Text(widget.initialName == null ? '添加纪念日' : '编辑纪念日'),
         elevation: 6,
         shadowColor: Colors.black54,
         backgroundColor: Colors.blue.shade400,
-        actions: [
-          IconButton(
-            onPressed: _saveEvent,
-            icon: const Icon(Icons.check, color: Colors.white),
-          )
-        ],
+        // 移除右上角的对号
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -139,6 +146,26 @@ class _AddEventPageState extends State<AddEventPage> {
                     child: const Text('选择日期'),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 40),
+            // 中间的保存按钮
+            Center(
+              child: ElevatedButton(
+                onPressed: _saveEvent,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade400,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 6,
+                  shadowColor: Colors.black.withOpacity(0.4),
+                ),
+                child: const Text(
+                  '加油加油加油',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
